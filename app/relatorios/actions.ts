@@ -4,6 +4,13 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { recordAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
+export async function createReport(formData: FormData) {
+  await requireAdmin();
+  const ownerId=String(formData.get("ownerId")||""); const year=Number(formData.get("year"));
+  if(!ownerId||!Number.isInteger(year)) redirect("/relatorios?erro=Informe+proprietário+e+ano.");
+  await prisma.annualReport.create({data:{ownerId,year}});
+  revalidatePath("/relatorios");redirect("/relatorios?sucesso=Relatório+criado.");
+}
 export async function updateReport(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") || ""); const action = String(formData.get("action") || "");

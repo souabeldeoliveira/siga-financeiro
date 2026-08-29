@@ -7,6 +7,7 @@ import { competenceFromDate } from "@/lib/dates";
 import { generateCompetenceForActiveContracts } from "@/lib/obligations";
 import { recordAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
+import { calculateTransfer } from "@/lib/transfers";
 
 function redirectWith(kind: "sucesso" | "erro", message: string): never {
   redirect("/essa-semana?" + kind + "=" + encodeURIComponent(message));
@@ -49,3 +50,25 @@ async function updateObligation(id: string, field: "rent" | "water" | "energy") 
 export async function markRentReceived(formData: FormData) { await updateObligation(String(formData.get("id") || ""), "rent"); }
 export async function markWaterReceived(formData: FormData) { await updateObligation(String(formData.get("id") || ""), "water"); }
 export async function markEnergyReceived(formData: FormData) { await updateObligation(String(formData.get("id") || ""), "energy"); }
+
+export async function markTransferCompleted(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") || "");
+  const obligation = await prisma.monthlyObligation.findUnique({ where: { id }, include: { contract: true } });
+  if (!obligation) redirectWith("erro", "Competência não encontrada.");
+  const released = obligation.rentStatus === "COMPLETED" || obligation.contract.guaranteeType === "BOOZ" || obligation.contract.guaranteeType === "LOFT";
+  if (!released) redirectWith("erro", "O repasse só pode ser concluído após o comprovante de aluguel.");
+  const calculation = calculateTransfer(obligation.contract, obligation.competence);
+  const now = new Date();
+  await prisma.$transaction([
+    prisma.transfer.upsert({
+      where: { monthlyObligationId: id },
+      create: { contractId: obligation.contractId, monthlyObligationId: id, ownerId: obligation.contract.ownerId, ...calculation, status: "COMPLETED", transferredAt: now },
+      update: { ...calculation, status: "COMPLETED", transferredAt: now },
+    }),
+    prisma.monthlyObligation.update({ where: { id }, data: { transferStatus: "COMPLETED" } }),
+  ]);
+  await recordAudit({ action: "transfer_completed", entityType: "Transfer", entityId: id, contractId: obligation.contractId, message: "Repasse concluído.", metadata: { amount: calculation.netTransferAmount.toString() } });
+  revalidatePath("/essa-semana"); revalidatePath("/dashboard");
+  redirectWith("sucesso", "Repasse concluído.");
+}

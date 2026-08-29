@@ -1,4 +1,6 @@
-import { generateCompetence, markEnergyReceived, markRentReceived, markWaterReceived } from "./actions";
+import { generateCompetence, markEnergyReceived, markRentReceived, markTransferCompleted, markWaterReceived } from "./actions";
+import { calculateTransfer } from "@/lib/transfers";
+import { formatMoney } from "@/lib/money";
 import { SubmitButton } from "@/components/buttons/SubmitButton";
 import { Card } from "@/components/cards/Card";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -48,6 +50,7 @@ export default async function EssaSemanaPage({ searchParams }: PageProps) {
               {item.rentStatus === "PENDING" && <form action={markRentReceived}><input type="hidden" name="id" value={item.id} /><button className="rounded-xl bg-[var(--brand)] px-4 py-2 text-sm font-bold text-white">Comprovante de aluguel recebido</button></form>}
               {item.waterStatus === "PENDING" && <form action={markWaterReceived}><input type="hidden" name="id" value={item.id} /><button className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold">Comprovante de água recebido</button></form>}
               {item.energyStatus === "PENDING" && <form action={markEnergyReceived}><input type="hidden" name="id" value={item.id} /><button className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold">Comprovante de energia recebido</button></form>}
+              {item.transferStatus !== "COMPLETED" && (item.rentStatus === "COMPLETED" || item.contract.guaranteeType === "BOOZ" || item.contract.guaranteeType === "LOFT") && <form action={markTransferCompleted}><input type="hidden" name="id" value={item.id} /><button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white">Concluir repasse ({formatMoney(calculateTransfer(item.contract, item.competence).netTransferAmount)})</button></form>}
             </div>
           </Card>
         ))}

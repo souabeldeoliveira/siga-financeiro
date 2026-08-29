@@ -50,6 +50,14 @@ async function updateObligation(id: string, field: "rent" | "water" | "energy") 
 export async function markRentReceived(formData: FormData) { await updateObligation(String(formData.get("id") || ""), "rent"); }
 export async function markWaterReceived(formData: FormData) { await updateObligation(String(formData.get("id") || ""), "water"); }
 export async function markEnergyReceived(formData: FormData) { await updateObligation(String(formData.get("id") || ""), "energy"); }
+export async function markIptuPaid(formData: FormData) {
+  await requireAdmin();
+  const id=String(formData.get("id")||""); const obligation=await prisma.monthlyObligation.findUnique({where:{id}});
+  if(!obligation) redirectWith("erro","Competência não encontrada.");
+  const now=new Date();
+  await prisma.$transaction([prisma.monthlyObligation.update({where:{id},data:{iptuStatus:"COMPLETED"}}),prisma.iptuInstallment.updateMany({where:{monthlyObligationId:id,status:"PENDING"},data:{status:"PAID",paidAt:now}})]);
+  await recordAudit({action:"iptu_paid",entityType:"MonthlyObligation",entityId:id,contractId:obligation.contractId,message:"IPTU pago."});revalidatePath("/essa-semana");redirectWith("sucesso","IPTU marcado como pago.");
+}
 
 export async function markTransferCompleted(formData: FormData) {
   await requireAdmin();

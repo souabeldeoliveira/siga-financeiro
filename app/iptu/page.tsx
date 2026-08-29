@@ -1,7 +1,10 @@
-import { PlaceholderPage } from "@/components/layout/PlaceholderPage";
-
-export const metadata = { title: "IPTU" };
-
-export default function IptuPage() {
-  return <PlaceholderPage eyebrow="Obrigações anuais" title="IPTU" description="O controle anual e parcelado de IPTU será implementado em uma fase futura." />;
-}
+import { createIptu } from "./actions";
+import { SubmitButton } from "@/components/buttons/SubmitButton";
+import { Card } from "@/components/cards/Card";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { StatusMessage } from "@/components/layout/StatusMessage";
+import { requireAdmin } from "@/lib/auth";
+import { formatMoney } from "@/lib/money";
+import { prisma } from "@/lib/prisma";
+export const metadata={title:"IPTU"}; type Props={searchParams:Promise<{erro?:string;sucesso?:string}>};
+export default async function IptuPage({searchParams}:Props){await requireAdmin();const [params,properties,records]=await Promise.all([searchParams,prisma.property.findMany({orderBy:{title:"asc"}}),prisma.iptuRecord.findMany({include:{property:true},orderBy:{year:"desc"}})]);return <><PageHeader eyebrow="Obrigações anuais" title="IPTU" description="Cadastre cota única ou parcelas anuais por imóvel."/><StatusMessage error={params.erro} success={params.sucesso}/><Card><form action={createIptu} className="grid gap-4 sm:grid-cols-2"><label className="sm:col-span-2"><span className="mb-1 block text-sm font-semibold">Imóvel *</span><select name="propertyId" required className="min-h-11 w-full rounded-xl border border-[var(--border)] px-3">{properties.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}</select></label><label><span className="mb-1 block text-sm font-semibold">Ano *</span><input name="year" type="number" defaultValue={new Date().getFullYear()} className="min-h-11 w-full rounded-xl border border-[var(--border)] px-3"/></label><label><span className="mb-1 block text-sm font-semibold">Valor total *</span><input name="amount" inputMode="decimal" required className="min-h-11 w-full rounded-xl border border-[var(--border)] px-3"/></label><label><span className="mb-1 block text-sm font-semibold">Parcelas</span><input name="installmentCount" type="number" min={1} defaultValue={1} className="min-h-11 w-full rounded-xl border border-[var(--border)] px-3"/></label><label><span className="mb-1 block text-sm font-semibold">Responsável</span><select name="responsibility" className="min-h-11 w-full rounded-xl border border-[var(--border)] px-3"><option value="OWNER">Proprietário</option><option value="TENANT">Inquilino</option></select></label><div className="sm:col-span-2"><SubmitButton>Cadastrar IPTU</SubmitButton></div></form></Card><section className="mt-6 grid gap-3">{records.map(r=><Card key={r.id}><h2 className="font-bold">{r.property.title} · {r.year}</h2><p className="mt-1 text-sm text-[var(--muted)]">{formatMoney(r.totalAmount)} · {r.installmentCount} parcela(s)</p></Card>)}</section></>;}

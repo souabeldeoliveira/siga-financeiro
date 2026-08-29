@@ -21,7 +21,7 @@ function money(value: { toString(): string }) { return new Intl.NumberFormat("pt
 export default async function ContratoDetalhesPage({ params, searchParams }: PageProps) {
   await requireAdmin();
   const [{ id }, query] = await Promise.all([params, searchParams]);
-  const contract = await prisma.contract.findUnique({ where: { id }, include: { owner: true, tenant: true, property: true } });
+  const contract = await prisma.contract.findUnique({ where: { id }, include: { owner: true, tenant: true, property: true, auditLogs: { orderBy: { createdAt: "desc" }, take: 20 } } });
   if (!contract) notFound();
   const items = [
     ["Proprietário", contract.owner.name], ["Inquilino", contract.tenant.name],
@@ -44,6 +44,7 @@ export default async function ContratoDetalhesPage({ params, searchParams }: Pag
           {items.map(([label, value]) => <div key={label}><dt className="text-xs font-bold uppercase tracking-wide text-[var(--muted)]">{label}</dt><dd className="mt-1 text-sm font-semibold">{value}</dd></div>)}
         </dl>
         {contract.notes && <div className="mt-6 border-t border-[var(--border)] pt-5"><h2 className="text-sm font-bold">Observações</h2><p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">{contract.notes}</p></div>}
+        <div className="mt-6 border-t border-[var(--border)] pt-5"><h2 className="text-sm font-bold">Histórico</h2>{contract.auditLogs.length===0?<p className="mt-2 text-sm text-[var(--muted)]">Nenhum evento registrado ainda.</p>:<ul className="mt-2 grid gap-2">{contract.auditLogs.map(log=><li key={log.id} className="text-sm"><span className="font-semibold">{log.action}</span><span className="text-[var(--muted)]"> · {date(log.createdAt)} {log.message?"· "+log.message:""}</span></li>)}</ul>}</div>
         <div className="mt-6 flex flex-wrap gap-3 border-t border-[var(--border)] pt-5">
           <Link href={"/contratos/" + contract.id + "/editar"} className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--brand)] px-5 text-sm font-bold text-white">Editar contrato</Link>
           <Link href="/contratos" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[var(--border)] px-5 text-sm font-semibold">Voltar</Link>

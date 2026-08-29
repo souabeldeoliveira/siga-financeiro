@@ -8,6 +8,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { recordAudit } from "@/lib/audit";
 
 const contractsPath = "/contratos";
 function text(formData: FormData, field: string) {
@@ -94,7 +95,8 @@ export async function createContract(formData: FormData) {
   try {
     const data = parseContract(formData);
     await validateRelations(data);
-    await prisma.contract.create({ data });
+    const contract = await prisma.contract.create({ data });
+    await recordAudit({ action: "contract_created", entityType: "Contract", entityId: contract.id, contractId: contract.id, message: "Contrato criado." });
   } catch (error) {
     redirectWith(contractsPath + "/novo", "erro", error instanceof Error ? error.message : databaseMessage(error));
   }
@@ -107,6 +109,7 @@ export async function updateContract(id: string, formData: FormData) {
     const data = parseContract(formData);
     await validateRelations(data, id);
     await prisma.contract.update({ where: { id }, data });
+    await recordAudit({ action: "contract_updated", entityType: "Contract", entityId: id, contractId: id, message: "Contrato atualizado." });
   } catch (error) {
     redirectWith(contractsPath + "/" + id + "/editar", "erro", error instanceof Error ? error.message : databaseMessage(error));
   }

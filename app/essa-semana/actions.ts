@@ -53,10 +53,31 @@ export async function markWaterReceived(formData: FormData) { await updateObliga
 export async function markEnergyReceived(formData: FormData) { await updateObligation(String(formData.get("id") || ""), "energy"); }
 export async function markIptuPaid(formData: FormData) {
   await requireAdmin();
-  const id=String(formData.get("id")||""); const obligation=await prisma.monthlyObligation.findUnique({where:{id}});
+  const id=String(formData.get("id")||"");
+  const obligation=await prisma.monthlyObligation.findUnique({where:{id}});
   if(!obligation) redirectWith("erro","Competência não encontrada.");
   const now=new Date();
-  await prisma.$transaction([prisma.monthlyObligation.update({where:{id},data:{iptuStatus:"COMPLETED"}}),prisma.iptuInstallment.updateMany({where:{monthlyObligationId:id,status:"PENDING"},data:{status:"PAID",paidAt:now}})]);
+  await prisma.$transaction(async (tx) => {
+    const installments = await tx.iptuInstallment.findMany({
+      where: { monthlyObligationId: id, status: "PENDING" },
+      select: { id: true, iptuRecordId: true },
+    });
+    if (installments.length === 0) throw new Error("Nenhuma parcela de IPTU pendente foi encontrada.");
+
+    await tx.iptuInstallment.updateMany({
+      where: { id: { in: installments.map((item) => item.id) } },
+      data: { status: "PAID", paidAt: now },
+    });
+    await tx.monthlyObligation.update({ where: { id }, data: { iptuStatus: "COMPLETED" } });
+
+    for (const iptuRecordId of new Set(installments.map((item) => item.iptuRecordId))) {
+      const pending = await tx.iptuInstallment.count({ where: { iptuRecordId, status: "PENDING" } });
+      await tx.iptuRecord.update({
+        where: { id: iptuRecordId },
+        data: { status: pending === 0 ? "PAID" : "PARTIALLY_PAID" },
+      });
+    }
+  });
   await recordAudit({action:"iptu_paid",entityType:"MonthlyObligation",entityId:id,contractId:obligation.contractId,message:"IPTU pago."});revalidatePath("/essa-semana");redirectWith("sucesso","IPTU marcado como pago.");
 }
 

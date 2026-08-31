@@ -8,7 +8,9 @@ export function isActiveContract(contract: ContractCycle) {
 }
 
 export function isGuaranteeContract(contract: Pick<ContractCycle, "guaranteeType">) {
-  return contract.guaranteeType === GuaranteeType.BOOZ || contract.guaranteeType === GuaranteeType.LOFT;
+  return contract.guaranteeType === GuaranteeType.BOOZ
+    || contract.guaranteeType === GuaranteeType.LOFT
+    || contract.guaranteeType === GuaranteeType.INSURANCE;
 }
 
 export function firstApplicableCompetence(contract: Pick<ContractCycle, "startDate" | "paymentType">) {

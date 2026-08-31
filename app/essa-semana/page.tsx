@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { StatusMessage } from "@/components/layout/StatusMessage";
 import { requireAdmin } from "@/lib/auth";
 import { competenceFromDate } from "@/lib/dates";
+import { isGuaranteeContract } from "@/lib/contracts";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Essa Semana" };
@@ -51,7 +52,7 @@ export default async function EssaSemanaPage({ searchParams }: PageProps) {
               {item.waterStatus === "PENDING" && <form action={markWaterReceived}><input type="hidden" name="id" value={item.id} /><button className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold">Comprovante de água recebido</button></form>}
               {item.energyStatus === "PENDING" && <form action={markEnergyReceived}><input type="hidden" name="id" value={item.id} /><button className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold">Comprovante de energia recebido</button></form>}
               {item.iptuStatus === "PENDING" && <form action={markIptuPaid}><input type="hidden" name="id" value={item.id} /><button className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold">IPTU pago</button></form>}
-              {item.transferStatus !== "COMPLETED" && (item.rentStatus === "COMPLETED" || item.contract.guaranteeType === "BOOZ" || item.contract.guaranteeType === "LOFT") && <form action={markTransferCompleted}><input type="hidden" name="id" value={item.id} /><button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white">Concluir repasse ({formatMoney(calculateTransfer(item.contract, item.competence).netTransferAmount)})</button></form>}
+              {item.transferStatus !== "COMPLETED" && (item.rentStatus === "COMPLETED" || isGuaranteeContract(item.contract)) && <form action={markTransferCompleted}><input type="hidden" name="id" value={item.id} /><button className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white">Concluir repasse ({formatMoney(calculateTransfer(item.contract, item.competence).netTransferAmount)})</button></form>}
             </div>
             {item.transfer?.status === "COMPLETED" && <details className="mt-4 rounded-xl bg-slate-50 p-3"><summary className="cursor-pointer text-sm font-bold">Mensagem ao proprietário</summary><p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">Olá, {item.contract.owner.name}.{"\n\n"}Segue o resumo do repasse referente ao imóvel {item.contract.property.title}, locado para {item.contract.tenant.name}.{"\n\n"}Aluguel: {formatMoney(item.transfer.grossRentAmount)}{"\n"}Taxa de administração: -{formatMoney(item.transfer.administrationFeeAmount)}{"\n"}Intermediação: -{formatMoney(item.transfer.intermediationFeeAmount)}{"\n"}Descontos: -{formatMoney(item.transfer.discountAmount)}{"\n"}Valor repassado: {formatMoney(item.transfer.netTransferAmount)}{"\n\n"}Comprovantes poderão ser enviados para conferência.</p></details>}
           </Card>

@@ -7,6 +7,7 @@ import { competenceFromDate } from "@/lib/dates";
 import { generateCompetenceForActiveContracts } from "@/lib/obligations";
 import { recordAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
+import { isGuaranteeContract } from "@/lib/contracts";
 import { calculateTransfer } from "@/lib/transfers";
 
 function redirectWith(kind: "sucesso" | "erro", message: string): never {
@@ -64,7 +65,7 @@ export async function markTransferCompleted(formData: FormData) {
   const id = String(formData.get("id") || "");
   const obligation = await prisma.monthlyObligation.findUnique({ where: { id }, include: { contract: true } });
   if (!obligation) redirectWith("erro", "Competência não encontrada.");
-  const released = obligation.rentStatus === "COMPLETED" || obligation.contract.guaranteeType === "BOOZ" || obligation.contract.guaranteeType === "LOFT";
+  const released = obligation.rentStatus === "COMPLETED" || isGuaranteeContract(obligation.contract);
   if (!released) redirectWith("erro", "O repasse só pode ser concluído após o comprovante de aluguel.");
   const installments = await prisma.discountInstallment.findMany({ where: { contractId: obligation.contractId, status: "PENDING" }, orderBy: [{ discount: { createdAt: "asc" } }, { installmentNumber: "asc" }], include: { discount: true } });
   const applicable = installments.filter((item, index, all) => all.findIndex(other => other.discountId === item.discountId) === index);

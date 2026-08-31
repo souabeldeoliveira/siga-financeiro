@@ -8,6 +8,7 @@ import { generateCompetenceForActiveContracts } from "@/lib/obligations";
 import { recordAudit } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { isGuaranteeContract } from "@/lib/contracts";
+import { nextDiscountInstallments } from "@/lib/discounts";
 import { calculateTransfer } from "@/lib/transfers";
 
 function redirectWith(kind: "sucesso" | "erro", message: string): never {
@@ -139,7 +140,7 @@ export async function markTransferCompleted(formData: FormData) {
   const released = obligation.rentStatus === "COMPLETED" || isGuaranteeContract(obligation.contract);
   if (!released) redirectWith("erro", "O repasse só pode ser concluído após o comprovante de aluguel.");
   const installments = await prisma.discountInstallment.findMany({ where: { contractId: obligation.contractId, status: "PENDING" }, orderBy: [{ discount: { createdAt: "asc" } }, { installmentNumber: "asc" }], include: { discount: true } });
-  const applicable = installments.filter((item, index, all) => all.findIndex(other => other.discountId === item.discountId) === index);
+  const applicable = nextDiscountInstallments(installments);
   const calculation = calculateTransfer(obligation.contract, obligation.competence, applicable.map(item => item.amount));
   const now = new Date();
   await prisma.$transaction([

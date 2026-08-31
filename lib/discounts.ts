@@ -1,6 +1,10 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
+export function nextDiscountInstallments<T extends { discountId: string }>(installments: T[]) {
+  return installments.filter((item, index, all) => all.findIndex((other) => other.discountId === item.discountId) === index);
+}
+
 export async function createDiscount(input: { contractId: string; type: "REPAIR" | "BILL" | "OTHER"; description: string; totalAmount: Prisma.Decimal; installmentCount: number; notes?: string | null }) {
   const contract = await prisma.contract.findFirst({ where: { id: input.contractId, status: "ACTIVE" }, select: { id: true } });
   if (!contract) throw new Error("Selecione um contrato ativo.");

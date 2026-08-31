@@ -81,11 +81,49 @@ export async function markIptuPaid(formData: FormData) {
   await recordAudit({action:"iptu_paid",entityType:"MonthlyObligation",entityId:id,contractId:obligation.contractId,message:"IPTU pago."});revalidatePath("/essa-semana");redirectWith("sucesso","IPTU marcado como pago.");
 }
 
+async function markTransferProofSent(id: string, field: "rent" | "discount") {
+  await requireAdmin();
+  const obligation = await prisma.monthlyObligation.findUnique({
+    where: { id },
+    include: { transfer: true },
+  });
+  if (!obligation || obligation.transferStatus !== "COMPLETED") {
+    redirectWith("erro", "Conclua o repasse antes de registrar o envio de comprovantes.");
+  }
+  if (field === "discount" && (!obligation.transfer || obligation.transfer.discountAmount.lte(0))) {
+    redirectWith("erro", "Este repasse não possui desconto para comprovar.");
+  }
+
+  const now = new Date();
+  await prisma.monthlyObligation.update({
+    where: { id },
+    data: field === "rent" ? { rentProofSentToOwnerAt: now } : { discountProofSentToOwnerAt: now },
+  });
+  await recordAudit({
+    action: field === "rent" ? "rent_proof_sent_to_owner" : "discount_proof_sent_to_owner",
+    entityType: "MonthlyObligation",
+    entityId: id,
+    contractId: obligation.contractId,
+    message: field === "rent" ? "Comprovante de aluguel enviado ao proprietário." : "Comprovante de desconto enviado ao proprietário.",
+  });
+  revalidatePath("/essa-semana");
+  redirectWith("sucesso", "Comprovante enviado registrado.");
+}
+
+export async function markRentProofSentToOwner(formData: FormData) {
+  await markTransferProofSent(String(formData.get("id") || ""), "rent");
+}
+
+export async function markDiscountProofSentToOwner(formData: FormData) {
+  await markTransferProofSent(String(formData.get("id") || ""), "discount");
+}
+
 export async function markTransferCompleted(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") || "");
   const obligation = await prisma.monthlyObligation.findUnique({ where: { id }, include: { contract: true } });
   if (!obligation) redirectWith("erro", "Competência não encontrada.");
+  if (obligation.transferStatus === "COMPLETED") redirectWith("erro", "Este repasse já foi concluído.");
   const released = obligation.rentStatus === "COMPLETED" || isGuaranteeContract(obligation.contract);
   if (!released) redirectWith("erro", "O repasse só pode ser concluído após o comprovante de aluguel.");
   const installments = await prisma.discountInstallment.findMany({ where: { contractId: obligation.contractId, status: "PENDING" }, orderBy: [{ discount: { createdAt: "asc" } }, { installmentNumber: "asc" }], include: { discount: true } });

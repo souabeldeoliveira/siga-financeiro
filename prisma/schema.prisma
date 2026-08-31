@@ -27,6 +27,7 @@ enum GuaranteeType {
   CAUTION
   BOOZ
   LOFT
+  INSURANCE
 }
 
 enum IptuResponsibility {

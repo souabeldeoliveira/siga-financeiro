@@ -55,7 +55,7 @@ export function ContractForm({ action, cancelHref, defaults = {}, owners, tenant
           <select className={inputClass} name="paymentType" defaultValue={defaults.paymentType ?? "ADVANCE"} required><option value="ADVANCE">Adiantado</option><option value="ARREARS">Vencido</option></select>
         </Field>
         <Field label="Garantia *">
-          <select className={inputClass} name="guaranteeType" defaultValue={defaults.guaranteeType ?? "CAUTION"} required><option value="CAUTION">Caução</option><option value="BOOZ">Booz</option><option value="LOFT">Loft</option></select>
+          <select className={inputClass} name="guaranteeType" defaultValue={defaults.guaranteeType ?? "CAUTION"} required><option value="CAUTION">Caução</option><option value="BOOZ">Booz</option><option value="LOFT">Loft</option><option value="INSURANCE">Seguro-fiança</option></select>
         </Field>
         <Field label="Responsável pelo IPTU *">
           <select className={inputClass} name="iptuResponsibility" defaultValue={defaults.iptuResponsibility ?? "OWNER"} required><option value="OWNER">Proprietário</option><option value="TENANT">Inquilino</option></select>

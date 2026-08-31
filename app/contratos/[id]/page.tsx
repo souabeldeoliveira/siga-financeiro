@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 
 type PageProps = { params: Promise<{ id: string }>; searchParams: Promise<{ sucesso?: string }> };
 const labels: Record<string, string> = {
-  ADVANCE: "Adiantado", ARREARS: "Vencido", CAUTION: "Caução", BOOZ: "Booz", LOFT: "Loft",
+  ADVANCE: "Adiantado", ARREARS: "Vencido", CAUTION: "Caução", BOOZ: "Booz", LOFT: "Loft", INSURANCE: "Seguro-fiança",
   OWNER: "Proprietário", TENANT: "Inquilino", THIRD_PARTY: "Terceiro",
   COMMON_RENTAL_10: "Locação comum — 10%", SEASONAL_20: "Temporada — 20%",
   EXEMPT: "Isento", FIFTY_AFTER_THREE_MONTHS: "50% após três meses",

@@ -143,15 +143,19 @@ export async function markTransferCompleted(formData: FormData) {
   const applicable = nextDiscountInstallments(installments);
   const calculation = calculateTransfer(obligation.contract, obligation.competence, applicable.map(item => item.amount));
   const now = new Date();
-  await prisma.$transaction([
-    prisma.transfer.upsert({
+  await prisma.$transaction(async (tx) => {
+    await tx.transfer.upsert({
       where: { monthlyObligationId: id },
       create: { contractId: obligation.contractId, monthlyObligationId: id, ownerId: obligation.contract.ownerId, ...calculation, status: "COMPLETED", transferredAt: now },
       update: { ...calculation, status: "COMPLETED", transferredAt: now },
-    }),
-    prisma.monthlyObligation.update({ where: { id }, data: { transferStatus: "COMPLETED" } }),
-    prisma.discountInstallment.updateMany({ where: { id: { in: applicable.map(item => item.id) } }, data: { status: "APPLIED", monthlyObligationId: id, appliedAt: now } }),
-  ]);
+    });
+    await tx.monthlyObligation.update({ where: { id }, data: { transferStatus: "COMPLETED" } });
+    await tx.discountInstallment.updateMany({ where: { id: { in: applicable.map(item => item.id) } }, data: { status: "APPLIED", monthlyObligationId: id, appliedAt: now } });
+    for (const discountId of new Set(applicable.map((item) => item.discountId))) {
+      const pending = await tx.discountInstallment.count({ where: { discountId, status: "PENDING" } });
+      if (pending === 0) await tx.discount.update({ where: { id: discountId }, data: { status: "COMPLETED" } });
+    }
+  });
   await recordAudit({ action: "transfer_completed", entityType: "Transfer", entityId: id, contractId: obligation.contractId, message: "Repasse concluído.", metadata: { amount: calculation.netTransferAmount.toString() } });
   revalidatePath("/essa-semana"); revalidatePath("/dashboard");
   redirectWith("sucesso", "Repasse concluído.");

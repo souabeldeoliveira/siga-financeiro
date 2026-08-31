@@ -39,9 +39,15 @@ async function updateObligation(id: string, field: "rent" | "water" | "energy") 
       prisma.charge.updateMany({ where: { monthlyObligationId: id, status: "OPEN" }, data: { status: "RESOLVED", resolvedAt: now } }),
     ]);
   } else if (field === "water") {
-    await prisma.monthlyObligation.update({ where: { id }, data: { waterStatus: "COMPLETED", waterProofReceivedAt: now } });
+    await prisma.$transaction([
+      prisma.monthlyObligation.update({ where: { id }, data: { waterStatus: "COMPLETED", waterProofReceivedAt: now } }),
+      prisma.waterRecord.updateMany({ where: { monthlyObligationId: id }, data: { status: "COMPLETED", proofReceivedAt: now } }),
+    ]);
   } else {
-    await prisma.monthlyObligation.update({ where: { id }, data: { energyStatus: "COMPLETED", energyProofReceivedAt: now } });
+    await prisma.$transaction([
+      prisma.monthlyObligation.update({ where: { id }, data: { energyStatus: "COMPLETED", energyProofReceivedAt: now } }),
+      prisma.energyRecord.updateMany({ where: { monthlyObligationId: id }, data: { status: "COMPLETED", proofReceivedAt: now } }),
+    ]);
   }
   await recordAudit({ action: field + "_proof_received", entityType: "MonthlyObligation", entityId: id, contractId: obligation.contractId, message: "Comprovante registrado." });
   revalidatePath("/essa-semana"); revalidatePath("/cobrancas"); revalidatePath("/dashboard");
@@ -95,10 +101,16 @@ async function markTransferProofSent(id: string, field: "rent" | "discount") {
   }
 
   const now = new Date();
-  await prisma.monthlyObligation.update({
-    where: { id },
-    data: field === "rent" ? { rentProofSentToOwnerAt: now } : { discountProofSentToOwnerAt: now },
-  });
+  await prisma.$transaction([
+    prisma.monthlyObligation.update({
+      where: { id },
+      data: field === "rent" ? { rentProofSentToOwnerAt: now } : { discountProofSentToOwnerAt: now },
+    }),
+    prisma.transfer.updateMany({
+      where: { monthlyObligationId: id },
+      data: field === "rent" ? { rentProofSentToOwnerAt: now } : { discountProofSentToOwnerAt: now },
+    }),
+  ]);
   await recordAudit({
     action: field === "rent" ? "rent_proof_sent_to_owner" : "discount_proof_sent_to_owner",
     entityType: "MonthlyObligation",

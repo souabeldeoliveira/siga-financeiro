@@ -1,5 +1,5 @@
 import { generateCompetence, markDiscountProofSentToOwner, markEnergyReceived, markIptuPaid, markRentProofSentToOwner, markRentReceived, markTransferCompleted, markWaterReceived } from "./actions";
-import { calculateTransfer } from "@/lib/transfers";
+import { calculateTransfer, ownerTransferMessage } from "@/lib/transfers";
 import { formatMoney } from "@/lib/money";
 import { SubmitButton } from "@/components/buttons/SubmitButton";
 import { Card } from "@/components/cards/Card";
@@ -28,7 +28,7 @@ export default async function EssaSemanaPage({ searchParams }: PageProps) {
         ],
       },
       orderBy: { dueDate: "asc" },
-      include: { transfer: true, contract: { include: { owner: true, tenant: true, property: true } } },
+      include: { transfer: true, discountInstallments: { include: { discount: true } }, contract: { include: { owner: true, tenant: true, property: true } } },
     }),
   ]);
   const current = competenceFromDate(new Date());
@@ -60,7 +60,7 @@ export default async function EssaSemanaPage({ searchParams }: PageProps) {
               {item.transferStatus === "COMPLETED" && !item.rentProofSentToOwnerAt && <form action={markRentProofSentToOwner}><input type="hidden" name="id" value={item.id} /><button className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold">Comprovante de aluguel enviado ao proprietário</button></form>}
               {item.transferStatus === "COMPLETED" && item.transfer && item.transfer.discountAmount.gt(0) && !item.discountProofSentToOwnerAt && <form action={markDiscountProofSentToOwner}><input type="hidden" name="id" value={item.id} /><button className="rounded-xl border border-[var(--border)] px-4 py-2 text-sm font-semibold">Comprovante do desconto enviado ao proprietário</button></form>}
             </div>
-            {item.transfer?.status === "COMPLETED" && <details className="mt-4 rounded-xl bg-slate-50 p-3"><summary className="cursor-pointer text-sm font-bold">Mensagem ao proprietário</summary><p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">Olá, {item.contract.owner.name}.{"\n\n"}Segue o resumo do repasse referente ao imóvel {item.contract.property.title}, locado para {item.contract.tenant.name}.{"\n\n"}Aluguel: {formatMoney(item.transfer.grossRentAmount)}{"\n"}Taxa de administração: -{formatMoney(item.transfer.administrationFeeAmount)}{"\n"}Intermediação: -{formatMoney(item.transfer.intermediationFeeAmount)}{"\n"}Descontos: -{formatMoney(item.transfer.discountAmount)}{"\n"}Valor repassado: {formatMoney(item.transfer.netTransferAmount)}{"\n\n"}Comprovantes poderão ser enviados para conferência.</p></details>}
+            {item.transfer?.status === "COMPLETED" && <details className="mt-4 rounded-xl bg-slate-50 p-3"><summary className="cursor-pointer text-sm font-bold">Mensagem ao proprietário</summary><p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-[var(--muted)]">{ownerTransferMessage({ ownerName: item.contract.owner.name, propertyTitle: item.contract.property.title, tenantName: item.contract.tenant.name, transfer: item.transfer, discountInstallments: item.discountInstallments })}</p></details>}
           </Card>
         ))}
       </section>

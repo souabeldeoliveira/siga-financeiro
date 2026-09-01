@@ -1,6 +1,7 @@
 import { registerDiscount } from "./actions";
 import { SubmitButton } from "@/components/buttons/SubmitButton";
 import { Card } from "@/components/cards/Card";
+import { QuickCreateLink } from "@/components/forms/QuickCreateLink";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { StatusMessage } from "@/components/layout/StatusMessage";
 import { requireAdmin } from "@/lib/auth";
@@ -19,7 +20,7 @@ export default async function DescontosNoRepassePage({ searchParams }: PageProps
   ]);
   return <><PageHeader eyebrow="Ajustes de repasse" title="Descontos no Repasse" description="Registre valores que serão abatidos de repasses futuros." /><StatusMessage error={params.erro} success={params.sucesso} />
     <Card><form action={registerDiscount} className="grid gap-4 sm:grid-cols-2">
-      <label className="sm:col-span-2"><span className="mb-1 block text-sm font-semibold">Contrato ativo *</span><select name="contractId" required className="min-h-11 w-full rounded-xl border border-[var(--border)] px-3">{contracts.map(c => <option key={c.id} value={c.id}>{c.property.title} — {c.tenant.name}</option>)}</select></label>
+      <label className="sm:col-span-2"><span className="mb-1 block text-sm font-semibold">Contrato ativo *</span><select name="contractId" required className="min-h-11 w-full rounded-xl border border-[var(--border)] px-3">{contracts.map(c => <option key={c.id} value={c.id}>{c.property.title} — {c.tenant.name}</option>)}</select><QuickCreateLink href="/contratos/novo" label="contrato" /></label>
       <label><span className="mb-1 block text-sm font-semibold">Tipo *</span><select name="type" className="min-h-11 w-full rounded-xl border border-[var(--border)] px-3"><option value="REPAIR">Reparo</option><option value="BILL">Conta</option><option value="OTHER">Outro</option></select></label>
       <label><span className="mb-1 block text-sm font-semibold">Valor total *</span><input name="amount" required inputMode="decimal" placeholder="Ex.: 150,00" className="min-h-11 w-full rounded-xl border border-[var(--border)] px-3" /></label>
       <label className="sm:col-span-2"><span className="mb-1 block text-sm font-semibold">Especificar *</span><input name="description" required maxLength={240} className="min-h-11 w-full rounded-xl border border-[var(--border)] px-3" /></label>

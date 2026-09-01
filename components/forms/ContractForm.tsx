@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SubmitButton } from "@/components/buttons/SubmitButton";
 import { Card } from "@/components/cards/Card";
+import { QuickCreateLink } from "@/components/forms/QuickCreateLink";
 
 type Option = { id: string; name: string };
 type PropertyOption = { id: string; title: string; address: string; ownerId: string; owner: { name: string } };
@@ -29,18 +30,21 @@ export function ContractForm({ action, cancelHref, defaults = {}, owners, tenant
             <option value="" disabled>Selecione</option>
             {owners.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
+          <QuickCreateLink href="/contratos/proprietarios" label="proprietário" />
         </Field>
         <Field label="Inquilino *">
           <select className={inputClass} name="tenantId" defaultValue={defaults.tenantId ?? ""} required>
             <option value="" disabled>Selecione</option>
             {tenants.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
           </select>
+          <QuickCreateLink href="/contratos/inquilinos" label="inquilino" />
         </Field>
         <Field label="Imóvel *" wide>
           <select className={inputClass} name="propertyId" defaultValue={defaults.propertyId ?? ""} required>
             <option value="" disabled>Selecione</option>
             {properties.map((item) => <option key={item.id} value={item.id}>{item.title} — {item.owner.name} — {item.address}</option>)}
           </select>
+          <QuickCreateLink href="/contratos/imoveis" label="imóvel" />
           <span className="mt-1.5 block text-xs text-[var(--muted)]">O imóvel precisa pertencer ao proprietário selecionado.</span>
         </Field>
         <Field label="Valor mensal do aluguel *">

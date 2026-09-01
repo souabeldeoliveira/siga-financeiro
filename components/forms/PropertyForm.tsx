@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { SubmitButton } from "@/components/buttons/SubmitButton";
 import { Card } from "@/components/cards/Card";
+import { QuickCreateLink } from "@/components/forms/QuickCreateLink";
 
 type OwnerOption = { id: string; name: string };
 type PropertyDefaults = {
@@ -34,6 +35,7 @@ export function PropertyForm({ action, cancelHref, defaults = {}, owners, submit
             <option value="" disabled>Selecione</option>
             {owners.map((owner) => <option key={owner.id} value={owner.id}>{owner.name}</option>)}
           </select>
+          <QuickCreateLink href="/contratos/proprietarios" label="proprietário" />
         </label>
         <label className="sm:col-span-2">
           <span className="mb-2 block text-sm font-semibold">Título do imóvel *</span>

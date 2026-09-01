@@ -5,14 +5,14 @@ import { AppShell } from "@/components/layout/AppShell";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "SIGA Financeiro", template: "%s | SIGA Financeiro" },
+  title: { default: "Cazabela — Gestão Financeira", template: "%s | Cazabela" },
   description: "Gestão financeira de contratos de administração imobiliária.",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#1f6847",
+  themeColor: "#8b3156",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

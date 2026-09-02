@@ -11,11 +11,11 @@ export function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
 
   if (pathname === "/login") {
-    return <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f9eee5,_var(--background)_48%)] px-4 py-6 sm:px-6">{children}</main>;
+    return <main className="min-h-screen bg-[radial-gradient(circle_at_top,_#f4e1d2,_var(--background)_48%)] px-4 py-6 sm:px-6">{children}</main>;
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#f9eee5,_var(--background)_48%)] lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#f4e1d2,_var(--background)_48%)] lg:grid lg:grid-cols-[17rem_minmax(0,1fr)]">
       <Sidebar />
       <div className="min-w-0">
         <MobileNav />

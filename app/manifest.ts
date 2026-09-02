@@ -9,8 +9,8 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "pt-BR",
     start_url: "/dashboard",
     display: "standalone",
-    background_color: "#f3eadf",
-    theme_color: "#8b3156",
+    background_color: "#eee1d4",
+    theme_color: "#5b3426",
     categories: ["business", "finance"],
     icons: [
       { src: "/cazabela-app-icon.png", sizes: "1254x1254", type: "image/png", purpose: "any" },

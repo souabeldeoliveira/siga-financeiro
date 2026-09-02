@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { Card } from "@/components/cards/Card";
+import { InstallAppPrompt } from "@/components/pwa/InstallAppPrompt";
 import { getSession } from "@/lib/auth";
 
 import { LoginForm } from "./LoginForm";
@@ -18,6 +19,7 @@ export default async function LoginPage() {
         <h1 className="mt-2 text-2xl font-extrabold tracking-tight">Gestão Financeira</h1>
         <p className="mt-2 text-sm leading-6 text-[var(--muted)]">Entre com a senha local para acessar sua rotina financeira.</p>
         <LoginForm />
+        <InstallAppPrompt />
       </Card>
     </div>
   );

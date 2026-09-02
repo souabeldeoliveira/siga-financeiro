@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { sessionCookieName, verifySessionToken } from "@/lib/session-token";
 
 export async function proxy(request: NextRequest) {
-  const isLoginPage = request.nextUrl.pathname === "/login";
+  const isLoginPage = request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/login/submit";
   const session = await verifySessionToken(request.cookies.get(sessionCookieName)?.value);
 
   if (!session && !isLoginPage) {

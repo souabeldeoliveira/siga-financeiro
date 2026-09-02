@@ -7,16 +7,10 @@ type InstallPromptEvent = Event & {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 };
 
-function isIphoneOrIpad() {
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
-}
-
 export function InstallAppPrompt() {
   const [installPrompt, setInstallPrompt] = useState<InstallPromptEvent | null>(null);
-  const [isAppleDevice, setIsAppleDevice] = useState(false);
 
   useEffect(() => {
-    setIsAppleDevice(isIphoneOrIpad());
     const handleBeforeInstall = (event: Event) => {
       event.preventDefault();
       setInstallPrompt(event as InstallPromptEvent);
@@ -40,9 +34,5 @@ export function InstallAppPrompt() {
     );
   }
 
-  if (isAppleDevice) {
-    return <p className="mt-4 text-center text-xs leading-5 text-[var(--muted)]">No iPhone ou iPad, toque em Compartilhar e escolha “Adicionar à Tela de Início”.</p>;
-  }
-
-  return <p className="mt-4 text-center text-xs leading-5 text-[var(--muted)]">No celular Android, abra o menu do navegador e escolha “Instalar aplicativo”.</p>;
+  return <p className="mt-4 text-center text-xs leading-5 text-[var(--muted)]">No Android, abra o menu e escolha “Instalar aplicativo”. No iPhone ou iPad, toque em Compartilhar e escolha “Adicionar à Tela de Início”.</p>;
 }

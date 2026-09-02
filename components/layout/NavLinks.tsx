@@ -17,6 +17,7 @@ export function NavLinks({ mobile = false }: NavLinksProps) {
       <Link
         key={item.href}
         href={item.href}
+        prefetch={true}
         aria-current={isActive ? "page" : undefined}
         className={mobile
           ? `shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${isActive ? "bg-[var(--brand)] text-white shadow-[0_5px_12px_rgba(139,49,86,0.18)]" : "bg-[var(--surface)] text-[var(--foreground)] ring-1 ring-[var(--border)] hover:bg-[var(--surface-soft)]"}`

@@ -10,6 +10,7 @@ import { competenceFromDate } from "@/lib/dates";
 import { isGuaranteeContract } from "@/lib/contracts";
 import { nextDiscountInstallments } from "@/lib/discounts";
 import { prisma } from "@/lib/prisma";
+import { NotificationItem, NotificationList } from "@/components/cards/NotificationList";
 
 export const metadata = { title: "Essa Semana" };
 type PageProps = { searchParams: Promise<{ erro?: string; sucesso?: string }> };
@@ -40,6 +41,16 @@ export default async function EssaSemanaPage({ searchParams }: PageProps) {
     }),
   ]);
   const current = competenceFromDate(new Date());
+  const notifications: NotificationItem[] = obligations.slice(0, 5).map((item) => {
+    const pending = [
+      item.rentStatus === "PENDING" ? "aluguel" : null,
+      item.waterStatus === "PENDING" ? "água" : null,
+      item.energyStatus === "PENDING" ? "energia" : null,
+      item.iptuStatus === "PENDING" ? "IPTU" : null,
+      item.transferStatus === "PENDING" ? "repasse" : null,
+    ].filter(Boolean).join(", ");
+    return { id: item.id, title: `Pendência em ${item.contract.property.title}`, description: `Providências pendentes: ${pending || "comprovantes"}.`, href: "/essa-semana", tone: item.rentStatus === "PENDING" ? "attention" : "warning" };
+  });
   return (
     <>
       <PageHeader eyebrow="Rotina operacional" title="Essa Semana" description="Prepare as obrigações mensais e acompanhe somente as pendências reais." />
@@ -53,6 +64,7 @@ export default async function EssaSemanaPage({ searchParams }: PageProps) {
         </form>
       </Card>
       <p className="mt-5 text-sm text-[var(--muted)]">{count} competência(s) registrada(s) no sistema.</p>
+      <NotificationList title="Avisos para tratar agora" items={notifications} emptyMessage="Não há pendências vencidas para tratar agora." />
       <section className="mt-6 grid gap-4">
         <h2 className="text-lg font-bold">Pendências reais</h2>
         {obligations.length === 0 ? <Card><p className="text-sm text-[var(--muted)]">Nenhuma pendência vencida para tratar agora.</p></Card> : obligations.map((item) => {

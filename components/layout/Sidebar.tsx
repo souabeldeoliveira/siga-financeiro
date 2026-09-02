@@ -12,7 +12,7 @@ export function Sidebar() {
     <aside className="hidden min-h-screen border-r border-[var(--border)] bg-[var(--surface)]/90 lg:sticky lg:top-0 lg:flex lg:h-screen lg:flex-col">
       <div className="border-b border-[var(--border)] px-6 py-7">
         <Link href="/dashboard" className="inline-flex items-center gap-3" aria-label="Cazabela — Gestão Financeira — Dashboard">
-          <Image src="/cazabela-app-icon-v2.png" alt="Símbolo da Cazabela" width={44} height={44} className="size-11 rounded-2xl object-cover shadow-[0_8px_18px_rgba(91,52,38,0.22)]" />
+          <Image src="/cazabela-app-icon-v3.png" alt="Símbolo da Cazabela" width={44} height={44} className="size-11 rounded-2xl object-cover shadow-[0_8px_18px_rgba(91,52,38,0.22)]" />
           <span>
             <span className="block text-base font-bold tracking-tight">Cazabela</span>
             <span className="block text-xs text-[var(--muted)]">Gestão Financeira</span>

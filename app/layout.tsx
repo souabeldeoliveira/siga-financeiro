@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 
 import { AppShell } from "@/components/layout/AppShell";
 import { ServiceWorkerRegistration } from "@/components/pwa/ServiceWorkerRegistration";
+import { RouteLoadRecovery } from "@/components/pwa/RouteLoadRecovery";
 
 import "./globals.css";
 
@@ -9,8 +10,8 @@ export const metadata: Metadata = {
   title: { default: "Cazabela — Gestão Financeira", template: "%s | Cazabela" },
   description: "Gestão financeira de contratos de administração imobiliária.",
   icons: {
-    icon: [{ url: "/cazabela-app-icon.png", sizes: "1254x1254", type: "image/png" }],
-    apple: [{ url: "/cazabela-app-icon.png", sizes: "1254x1254", type: "image/png" }],
+    icon: [{ url: "/cazabela-app-icon-v2.png", sizes: "1254x1254", type: "image/png" }],
+    apple: [{ url: "/cazabela-app-icon-v2.png", sizes: "1254x1254", type: "image/png" }],
   },
 };
 
@@ -23,7 +24,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body><ServiceWorkerRegistration /><AppShell>{children}</AppShell></body>
+      <body><RouteLoadRecovery /><ServiceWorkerRegistration /><AppShell>{children}</AppShell></body>
     </html>
   );
 }

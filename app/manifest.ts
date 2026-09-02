@@ -13,8 +13,8 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#5b3426",
     categories: ["business", "finance"],
     icons: [
-      { src: "/cazabela-app-icon.png", sizes: "1254x1254", type: "image/png", purpose: "any" },
-      { src: "/cazabela-app-icon.png", sizes: "1254x1254", type: "image/png", purpose: "maskable" },
+      { src: "/cazabela-app-icon-v2.png", sizes: "1254x1254", type: "image/png", purpose: "any" },
+      { src: "/cazabela-app-icon-v2.png", sizes: "1254x1254", type: "image/png", purpose: "maskable" },
     ],
   };
 }
